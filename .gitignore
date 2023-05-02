@@ -1,0 +1,8 @@
+old
+.idea
+data/iSAID-DOTAv1/*
+results/summary/*
+results/weights/*
+src/modules/networks/weights/*
+testing/model_weights/rcnn/*
+*__pycache__
