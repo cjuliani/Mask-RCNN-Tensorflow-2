@@ -70,9 +70,10 @@ def shift_pixels(array, size, direction, rate, **kwargs):
             pixels depending on the height or width of the input
             array.
     """
-    # translate within the input limit range (converted in %)
+    # Translate within the input limit range (converted in %).
     rate = int((size / 100) * rate)
     arr = np.zeros_like(array)
+
     # iterate procedure to each channel
     for c in range(array.shape[-1]):
         if type(direction) == list:
@@ -80,6 +81,7 @@ def shift_pixels(array, size, direction, rate, **kwargs):
         else:
             translation = direction * rate
         arr[..., c] = ndimage.shift(array[..., c], translation, order=0)
+
     return arr
 
 
@@ -136,23 +138,4 @@ def augment_geometry(array, size, select, angle, scaling, direction, translation
         scaling=scaling)
 
     # (4) rotate
-    return rotate(arr, angle=angle)
-
-
-def flip_and_rotate(array, select, angle):
-    """Returns the input array with augmented geometry (flipping
-    and rotation only).
-
-
-    Args:
-        array (ndarray): the input array to shift pixels from.
-        angle (int): the angle at which the array is rotated.
-        select (tuple or list): the selection indices taken randomly
-            to specify which augmentation methods to apply.
-    """
-    # (1) Apply flipping (or not).
-    functions = [flip_h, flip_v, do_nothing]
-    arr = functions[select[0]](array)
-
-    # (2) Apply rotation (or not).)
     return rotate(arr, angle=angle)

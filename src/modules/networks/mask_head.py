@@ -85,7 +85,7 @@ class MaskHead(tf.keras.Model):
                 name="gt_mask_crops")  # (num_items, pool, pool, 1)
         except Exception as err:
             raise Exception(err)
-        fg_roi_gt_masks_pooled = tf.stop_gradient(tf.squeeze(fg_roi_gt_masks_pooled, axis=-1))  # (num_items, pool, pool)
+        fg_roi_gt_masks_pooled = tf.stop_gradient(tf.squeeze(fg_roi_gt_masks_pooled, axis=-1))  # (num_item, pool, pool)
 
         # Select foreground items
         sample_indices = tf.where(bg_obj_indices > 0)  # (fg,)

@@ -395,6 +395,18 @@ class AUC(tf.keras.metrics.Metric):
 
 
 class SegAccuracy(tf.keras.metrics.Metric):
+    """The metric module for estimating the accuracy of segmentation from
+     the mask branch.
+
+    Attributes:
+        score: the F1 score accumulated.
+        counter: the total number of scores accumulated.
+            The average F1 score is calculated based on
+            this number.
+        reset_state_interval (int): the step interval at
+            which the average F1 score is set to 0 (reset).
+     """
+
     def __init__(self, name=None, dtype=None, interval=1., **kwargs):
         super(SegAccuracy, self).__init__(name=name, dtype=dtype, **kwargs)
 
@@ -427,6 +439,6 @@ class SegAccuracy(tf.keras.metrics.Metric):
         return self.score.value() / self.counter
 
     def reset_state(self):
-        # Resets all of the metric state variables.
+        """Resets the metric state variables."""
         self.score.assign(0.)
         self.counter.assign(0.)

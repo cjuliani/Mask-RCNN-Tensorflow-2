@@ -71,7 +71,7 @@ class DataGenerator(InfCounterLoop):
         self.anno_dframe = self.anno_dframe[self.anno_dframe['category_id'].isin(self.class_numbers)]
 
         # Rebuild annotation dict based on class_names to learn
-        # Note: category_id starts from 1, not 0.'
+        # Note: category_id starts from 1, not 0.
         self.train_img_ids, self.val_ids, self.test_ids = [], [], []
         for cat in self.class_numbers:
             tmp_dframe = self.anno_dframe[self.anno_dframe['category_id'].isin([cat])]
@@ -106,7 +106,8 @@ class DataGenerator(InfCounterLoop):
             img_ids=self.test_ids,
             categories=self.class_numbers)
 
-    def set_data_indices(self, img_ids, categories):
+    @staticmethod
+    def set_data_indices(img_ids, categories):
         # Get maximum number of ids for considered class_names.
         max_num = np.max([len(items) for items in img_ids])
 
@@ -421,7 +422,7 @@ def visualize_boxes(background, coords):
     plt.show()
 
 
-def get_boxes_dimensions(generator, n=50):
+def estimate_boxes_dimensions(generator, n=50):
     # Check box dimensions
     for i in range(n):
         start = time.time()

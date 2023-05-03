@@ -1,43 +1,37 @@
-# Directories of training and inference results.
-RESULTS_FOLDER = 'results'
-SUMMARY_PATH = RESULTS_FOLDER + '/summary'  # folder path of summary results
-SAVE_WEIGHTS_PATH = RESULTS_FOLDER + '/weights'  # folder path where to save parameters of training models
-
 # ----- TRAINING CONFIGURATION
 INPUT_SIZE = (512, 512)  # input of learning model resized to dimension (width, height)
 MODEL_NAME = 'model_001'  # model name define by user
-MODEL_FOLDER_TO_RESTORE = 'model_001'
 
 # Training configuration
 EPOCHS = 100  # total number of training epochs
 SUMMARY_STEP = 1  # step interval for saving summary
 VALIDATION_STEP = 5  # step interval for validation while training.
 METRIC_RESET_STEP = 1  # reset metric states at every given step
-BATCH_SIZE = 2  # /!\ the model only work with batch of 1 (per GPU) /!\
+BATCH_SIZE = 1  # WARNING: the model only works with a batch of 1 (no more).
 
 # Learning scheme.
 LEARNING_RATE = 1e-4  # if cyclic decay, this corresponds to maximum learning rate
 MINIMUM_LEARNING_RATE = 5e-6  # if cyclic decay, this corresponds to base learning rate
 MOMENTUM = 0.9  # SGD parameter, only relevant if ADAM_OPTIMIZER is False
 NESTEROV = True  # SGD parameter, only relevant if ADAM_OPTIMIZER is False
-LR_DECAY = True
+LR_DECAY = True  # if True, actives learning rate decay
 LR_DECAY_STEPS = 100  # decay step
 LR_DECAY_RATE = 0.90
 LR_DECAY_STAIRCASE = True  # if True, use a staircase function type for decay
-LR_CYCLIC = False  # if True, apply cyclic LR (/!\ LR_DECAY must also be True to work /!\)
+LR_CYCLIC = False  # if True, apply cyclic LR. WARNING: LR_DECAY must also be True
 CYCLIC_STEP_SIZE = 50  # number of training iterations per half cycle
 CYCLIC_GAMMA = 0.9991  # function amplitude scaling factor
 ADAM_OPTIMIZER = True  # if True, use Adam optimization (SGD otherwise)
 
 # Data configuration.
 DATA_FOLDER = r"data/iSAID-DOTAv1"
-CLASSES_TO_LEARN = ['plane', 'ship']
-CATEGORIES_TO_LEARN = [4, 5]
+CLASSES_TO_LEARN = ['plane', 'ship']  # classes to learn from
+CATEGORIES_TO_LEARN = [4, 5]  # data categories associated to classes
 NUM_CLASSES = len(CLASSES_TO_LEARN) + 1  # number of classes + 1 (background)
-AUGMENT = True  # data augmentation while training (set to False for validation)
+AUGMENT = True  # data augmentation while training
 
 # Saving strategy.
-NUM_SAVING_PER_EPOCH = 30  # number of time saving occurs, ie if data_size // number % step is 0
+NUM_SAVING_PER_EPOCH = 30  # number of time saving of model weights occurs per epoch
 
 # Summary.
 SUM_NUM_BOXES_TO_SHOW = 25  # maximum number of boxes to show in summary
@@ -59,7 +53,7 @@ RPN_BATCH_SIZE = 64
 # anchors spatially (more grid cells). The number indicates
 # how many layers with stride 2 from backbone will see their
 # stride changed 1 instead, starting from the output layer.
-ANCHOR_DENSITY_LEVEL = 2  # default value is 0 (no density increase); each level increase density by power 2
+ANCHOR_DENSITY_LEVEL = 2  # default value is 0 (no density increase); each level increase density by power of 2
 
 # Increase number of positives by resampling known positive(s)
 # in RPN batch. This is to cope with imbalanced data.
@@ -69,7 +63,7 @@ RPN_RESAMPLE_RATE = 0.5  # ratio of batch made of positives
 # Label thresholds of foreground/background anchors.
 RPN_ANCHOR_FG_THRESH = 0.7  # greater or equal than this value
 RPN_ANCHOR_BG_THRESH = 0.3  # less than this value
-RPN_FG_RATIO = 0.5  # should be 0.3 to 0.5 (not above 0.5)
+RPN_FG_RATIO = 0.5  # WARNING: should be 0.3 to 0.5 (not above 0.5)
 
 # NMS.
 MAX_RPN_POST_NMS_TOP_N = 2000  # top scoring boxes to keep after applying NMS to RPN proposals
@@ -95,10 +89,10 @@ HEAD_BATCH_SIZE = 64
 # sampling of positives is always limited by HEAD_FG_RATE (maximum),
 # and HEAD_RESAMPLE_POSITIVES forces to resample up to this limit.
 HEAD_RESAMPLE_POSITIVES = True
-HEAD_FG_RATE = 0.5  # always applied, even if no resampling
+HEAD_FG_RATE = 0.5  # NOTE: always applied, even if no resampling
 
-# Networks parameters
-BACKBONE_MODEL = 'resnet101'
+# Networks parameters.
+BACKBONE_MODEL = 'resnet101'  # resnet50, densenet201, xception
 RPN_LOSS_WEIGHTS = (1, 30.)  # (score, regression) losses coefficients
 RPN_NEG_POS_WEIGHTS = (1., 1.)  # (background, pos)
 HEAD_LOSS_WEIGHTS = (1., 500.)  # (class, regression)
@@ -119,7 +113,7 @@ TRAIN_RPN = True  # if False, freeze all layers of the RPN network (not trained)
 TRAIN_HEAD = True
 TRAIN_HEAD_CLS = True  # if False, do not train the classifier of the HEAD network
 TRAIN_HEAD_REG = True
-TRAIN_MASK = True  # if False, do not train on mask (only boxes and classes predicted)
+TRAIN_MASK = True  # if False, do not train on mask
 
 # Regularization.
 BACKBONE_REG_COEF = 1e-5
@@ -130,7 +124,10 @@ RPN_LABEL_SMOOTHING = False
 HEAD_LABEL_SMOOTHING = False
 SMOOTH_FACTOR = 0.1
 
-# Path to backbone weight folder.
-# WARNING: Do not change. Used for path definition.
+# ----- DIRECTORIES
+# WARNING: Do not change. Used for path definitions.
 PATH_IMAGENET_WEIGHTS = 'src/modules/networks/weights/'
 BACKBONE_PATH = 'src/modules/networks/'
+RESULTS_FOLDER = 'results'
+SUMMARY_PATH = RESULTS_FOLDER + '/summary'  # folder path of summary results
+SAVE_WEIGHTS_PATH = RESULTS_FOLDER + '/weights'  # folder path where to save parameters of training models

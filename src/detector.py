@@ -1,12 +1,9 @@
 import os.path
-import random
-import string
 import tensorflow as tf
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 
-from datetime import datetime
 from src.generator import DataGenerator
 from src.modules.solver import Solver
 from src.modules.utils.rcnn.mask import unmold_masks, resize_mask
@@ -26,22 +23,18 @@ class Detector:
         data_generator (object): a module generating train batches.
         solver (object): training module containing the learning model
             and the iterative process for training and testing the model.
-        num_classes (int): number of classes to learn considered.
     """
 
     def __init__(self, input_size, batch_size, training_classes, training_categories,
-                 data_folder, num_classes, model_folder_to_restore=None,
-                 model_to_restore=None, run_eagerly=False, restore_lr=False, load_backbone=False,
+                 data_folder, num_classes, model_to_restore=None,
+                 weight_folder_to_restore=None, run_eagerly=False, restore_lr=False, load_backbone=False,
                  load_rpn=False, load_head=False, load_cpkt=False, load_mask=False, save_path=None):
         """Initialize a data generator, a trainer and its respective
         learning model."""
         self.input_size = input_size
 
-        # Delete eventual session from other model.
-        tf.keras.backend.clear_session()
-
         # Run mode.
-        tf.config.run_functions_eagerly(run_eagerly)  # WARNING: if True, prediction is slower
+        tf.config.run_functions_eagerly(run_eagerly)
 
         # Initiate batch generator.
         self.data_generator = DataGenerator(
@@ -57,7 +50,7 @@ class Detector:
             batch_size=batch_size)
 
         # Load model variables.
-        if model_to_restore:
+        if weight_folder_to_restore:
             self.load_model_variables(
                 restore_lr=restore_lr,
                 training_classes=training_classes,
@@ -67,8 +60,8 @@ class Detector:
                 load_mask=load_mask,
                 load_cpkt=load_cpkt,
                 save_path=save_path,
-                model_folder_to_restore=model_folder_to_restore,
-                model_to_restore=model_to_restore)
+                model_to_restore=model_to_restore,
+                weight_folder_to_restore=weight_folder_to_restore)
         else:
             # If no checkpoint restored, assign class names
             # of generator to checkpoint that must be saved.
@@ -93,13 +86,9 @@ class Detector:
         object."""
         self.solver.test(input_ids)
 
-    @staticmethod
-    def dec_name(x):
-        return str(x.decode('ascii')) if type(x) != str else str(x)
-
     def load_model_variables(self, restore_lr, training_classes, load_backbone,
                              load_rpn, load_head, load_mask, load_cpkt, save_path,
-                             model_folder_to_restore, model_to_restore):
+                             model_to_restore, weight_folder_to_restore):
         """Loads variables of a saved learning model.
 
         Args:
@@ -120,14 +109,14 @@ class Detector:
             load_cpkt (bool): if True, load the model checkpoint.
             save_path (str): path to folder result where to save model
                 parameters.
-            model_to_restore (str): name of the model to restore.
-            model_folder_to_restore (str): name of the folder containing
+            weight_folder_to_restore (str): name of the model to restore.
+            model_to_restore (str): name of the folder containing
                 the name to restore.
         """
         # Load model variables.
         self.solver.learning_model.load_variables(
             directory=os.path.join(
-                save_path, model_folder_to_restore, model_to_restore),
+                save_path, model_to_restore, weight_folder_to_restore),
             checkpoint=self.solver.ckpt,
             load_learning_rate=restore_lr,
             class_names=training_classes,
@@ -214,7 +203,6 @@ class Detector:
             min_score (float): minimum class score for predictions.
             rpn_detection (bool): if True, only display object
                 predictions from the region proposal network (RPN).
-            save_path (str): path to save the figure.
             rpn_obj_thresh (float): a threshold value above which a
                 prediction is considered valid.
             add_mask_contour (bool): if True, add contour line to generated
@@ -445,7 +433,7 @@ def predict_from_single_image(image, nms_top_n, nms_iou_thresh, model, model_inp
         nms_top_n=nms_top_n,
         nms_iou_thresh=nms_iou_thresh,
         obj_score_thresh=min_obj_score,
-        predict_from_rpn=predict_from_rpn)  # (B,), (B, 4), (B, 28, 28,), (B, 2)
+        predict_from_rpn=predict_from_rpn)
 
     obj_masks = unmold_masks(
         pooled_masks=masks_prob,

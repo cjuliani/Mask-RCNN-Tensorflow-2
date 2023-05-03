@@ -21,7 +21,7 @@ def roi_align(feature_maps, boxes, box_indices, pre_pool_size, image_size,
         crop_coef (int): cropping coefficient.
 
     """
-    with tf.name_scope('roi_align_pyramid'):
+    with tf.name_scope('roi_align'):
         x0, y0, x1, y1 = tf.split(boxes, 4, axis=1)
         boxes_width = (x1 - x0)
         boxes_height = (y1 - y0)

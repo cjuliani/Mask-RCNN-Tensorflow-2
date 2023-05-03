@@ -6,12 +6,12 @@ class ExponentialDecay(tf.keras.optimizers.schedules.LearningRateSchedule):
 
     Attributes:
         initial_lr (float): the initial learning rate.
-        decay_rate (float): the decaying rate.
-        decay_steps (int): the decaying step.
+        decay_rate (float): the decay rate.
+        decay_steps (int): the decay step.
         staircase (bool) if True, apply a staircase type
-            of decaying.
+            of decay.
         minimum_lr (float): minimum learning rate to
-            reach while decaying.
+            reach while decay.
     """
 
     def __init__(self, initial_lr, decay_rate, decay_steps, minimum_lr, staircase):
@@ -28,8 +28,10 @@ class ExponentialDecay(tf.keras.optimizers.schedules.LearningRateSchedule):
             exponent = tf.math.floordiv(tf.cast(step, tf.float32), self.decay_steps)
         else:
             exponent = tf.math.divide(tf.cast(step, tf.float32), self.decay_steps)
-        # Apply decaying.
+
+        # Apply decay.
         lr = self.initial_lr * tf.math.pow(self.decay_rate, exponent)
+
         # Make sure calculated learning rate is not
         # below a given minimum.
         return tf.math.maximum(lr, self.minimum_lr)
@@ -55,7 +57,7 @@ class CyclicLR(tf.keras.optimizers.schedules.LearningRateSchedule):
         self.gamma = tf.cast(gamma, tf.float32)
 
     def __call__(self, step):
-        # Apply decaying.
+        # Apply decay.
         cycle = tf.math.floor(1. + tf.cast(step, tf.float32) / (2. * self.step_size))
         x = tf.math.abs(tf.cast(step, tf.float32) / self.step_size - 2 * cycle + 1)
         amplitude = tf.math.pow(self.gamma, tf.cast(step, tf.float32))

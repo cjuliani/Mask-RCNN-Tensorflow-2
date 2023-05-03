@@ -1,6 +1,7 @@
 old
 .idea
-data/iSAID-DOTAv1/*
+data/iSAID-DOTAv1/annotations/*
+data/iSAID-DOTAv1/images/*
 results/summary/*
 results/weights/*
 src/modules/networks/weights/*

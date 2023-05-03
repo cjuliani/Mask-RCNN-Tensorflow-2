@@ -4,10 +4,7 @@ import unittest
 import mock
 import tensorflow as tf
 
-import sys
-sys.path.append("..")  # add top folder
-
-import test_config
+from testing import test_config
 from src.modules.solver import Solver
 from src.detector import Detector
 
@@ -67,8 +64,8 @@ class TestCase(unittest.TestCase):
             ),
             training_classes=test_config.CLASSES_TO_LEARN,
             num_classes=test_config.NUM_CLASSES,
-            model_folder_to_restore=test_config.MODEL_FOLDER_TO_RESTORE,
-            model_to_restore=None,
+            model_to_restore=test_config.MODEL_FOLDER_TO_RESTORE,
+            weight_folder_to_restore=None,
             save_path=test_config.UNIT_TESTS_WEIGHTS_PATH,
             run_eagerly=True,
             load_cpkt=True,
@@ -95,7 +92,7 @@ class TestCase(unittest.TestCase):
         cls.detector_obj.reset_model_variables()
 
     @mock_configuration(*config_param_1)
-    def load_model_variables(self):
+    def test_load_model_variables(self):
         """Checks that initial and loaded model weights are different."""
         # Get initial model weights.
         initial_weights = self.detector_obj.get_weights_of_learning_model()
@@ -110,8 +107,8 @@ class TestCase(unittest.TestCase):
             load_mask=True,
             load_cpkt=True,
             save_path=test_config.UNIT_TESTS_WEIGHTS_PATH,
-            model_folder_to_restore=test_config.MODEL_FOLDER_TO_RESTORE,
-            model_to_restore=test_config.MODEL_TO_RESTORE)
+            model_to_restore=test_config.MODEL_FOLDER_TO_RESTORE,
+            weight_folder_to_restore=test_config.MODEL_TO_RESTORE)
 
         loaded_weights = self.detector_obj.get_weights_of_learning_model()
 
@@ -145,8 +142,8 @@ class TestCase(unittest.TestCase):
             load_mask=True,
             load_cpkt=True,
             save_path=test_config.UNIT_TESTS_WEIGHTS_PATH,
-            model_folder_to_restore=test_config.MODEL_FOLDER_TO_RESTORE,
-            model_to_restore=test_config.MODEL_TO_RESTORE)
+            model_to_restore=test_config.MODEL_FOLDER_TO_RESTORE,
+            weight_folder_to_restore=test_config.MODEL_TO_RESTORE)
 
         # Call method.
         self.detector_obj.data_generator.data_size = 1  # only process 1 step
@@ -202,7 +199,7 @@ class TestCase(unittest.TestCase):
             self.assertGreater(len(files), 0, f"Folder '{dir_}' must not be empty.")
 
     @mock_configuration(*config_param_1)
-    def model_testing(self):
+    def test_model_testing(self):
         """Checks that validation of the model is processed
         correctly."""
         # Load model parameters.
@@ -215,8 +212,8 @@ class TestCase(unittest.TestCase):
             load_mask=True,
             load_cpkt=True,
             save_path=test_config.UNIT_TESTS_WEIGHTS_PATH,
-            model_folder_to_restore=test_config.MODEL_FOLDER_TO_RESTORE,
-            model_to_restore=test_config.MODEL_TO_RESTORE)
+            model_to_restore=test_config.MODEL_FOLDER_TO_RESTORE,
+            weight_folder_to_restore=test_config.MODEL_TO_RESTORE)
 
         # Mock detector property.
         # Note: if you replace Foo.my_method with a method that

@@ -30,7 +30,7 @@ def smooth_l1_loss(y_pred, y_true, sample_weights):
 
     # Calculate loss by applying sample_weights to calculate
     # the loss for foreground boxes only.
-    return loss_obj(y_true=bbox_targets_fg, y_pred=bbox_enc_fg)  # (num_fg, 1)
+    return loss_obj(y_true=bbox_targets_fg, y_pred=bbox_enc_fg)
 
 
 def rpn_score_loss(y_true, y_prob, loss_weights):
@@ -81,5 +81,4 @@ def smooth_labels(labels, factor=0.1):
     """Returns smoothed labels."""
     labels *= (1. - factor)
     labels += (factor / tf.cast(tf.shape(labels)[0], tf.float32))
-    # returned the smoothed labels
     return labels

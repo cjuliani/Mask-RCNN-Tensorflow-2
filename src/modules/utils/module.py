@@ -33,6 +33,7 @@ def replace_specified_char(input_string, replaced_by='_', to_replace=None):
 def get_module(path, model_name='model'):
     """Returns a learning model specified from path."""
     path = replace_specified_char(path, replaced_by="/", to_replace=["\\"])
+
     # Add module path to system (temporarily) and import module
     sys.path.append(path)   # directory containing modules
     try:
@@ -45,4 +46,5 @@ def get_module(path, model_name='model'):
     except (ValueError, ImportError) as msg:
         print(f"Import error 3 when loading '{path}': " + str(msg))
         sys.exit(0)
+
     return module

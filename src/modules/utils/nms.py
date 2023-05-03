@@ -38,6 +38,7 @@ def apply_nms(bboxes, scores_prob, top_n, iou_thresh, image_width, image_height,
     x2 = tf.slice(bboxes, [0, 2], [-1, 1]) / image_width
     y2 = tf.slice(bboxes, [0, 3], [-1, 1]) / image_height
     formatted_proposals = tf.concat([y1, x1, y2, x2], axis=1)
+
     # Get positive scores.
     with tf.name_scope('nms'):
         if tf.greater(sigma, 0):
@@ -53,4 +54,5 @@ def apply_nms(bboxes, scores_prob, top_n, iou_thresh, image_width, image_height,
                 scores=scores_prob,
                 max_output_size=top_n,
                 iou_threshold=iou_thresh)
+
     return keep_indices

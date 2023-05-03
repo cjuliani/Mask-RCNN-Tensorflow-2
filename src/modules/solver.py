@@ -154,8 +154,7 @@ class Solver(object):
                 anchors=selected_bbox,
                 scores=tf.cast(selected_scores, tf.float32),
                 grid_points=None,
-                pos_min_score=config.SUM_BOXES_MIN_SCORE,
-                show_fig=False)
+                pos_min_score=config.SUM_BOXES_MIN_SCORE)
             figures.append([_fig, prop[2]])
         return figures
 
@@ -214,24 +213,6 @@ class Solver(object):
                 except AttributeError:
                     # if run eagerly
                     tf.summary.scalar(str(name), val, step=step)
-
-    @staticmethod
-    def convert_to_tensor(tensors, data_type):
-        """Convert list of tensors to tensor object.
-        Use this function for non-eager mode."""
-
-        def pad_tensor(tensor, max_dim):
-            diff = max_dim - tf.shape(tensor)[0]
-            if data_type == "bboxes":
-                return tf.concat([tensor, tf.zeros((diff, 4), dtype=tf.int32)], axis=0)
-            elif data_type == "labels":
-                return tf.concat([tensor, tf.zeros((diff,), dtype=tf.int32)], axis=0)
-            else:
-                raise Exception("Data type not recognized.")
-
-        # Pad tensors for common maximum dimension.
-        dim_max = tf.reduce_max([tf.shape(item)[0] for item in tensors])
-        return tf.stack([pad_tensor(tensor, dim_max) for tensor in tensors])
 
     def train(self, reset_summary_files=True):
         """Trains the learning model.

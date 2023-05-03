@@ -106,6 +106,8 @@ def rois_sampling(roi_bbox, roi_scores, gt_bbox, gt_cls, gt_masks, foreground_nu
         roi_scores (tensor): the regions of interest scores.
         gt_bbox (tensor): ground truth bounding boxes.
         gt_cls (tensor): ground truth classes.
+        gt_masks (tensor): ground truth binary masks of input
+            images.
         foreground_num (int): the number of foreground indices.
         foreground_thresh (float): foreground threshold, or the IoU
             threshold between ground truth and region of interest

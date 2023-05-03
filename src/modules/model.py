@@ -212,33 +212,6 @@ class Model(tf.keras.Model):
                 momentum=0.,
                 nesterov=False)
 
-    @staticmethod
-    def extract_input_regions(inputs, proposals, image_size,
-                              box_indices, crop_size):
-        """Returns a region of img cropped at given box coordinates.
-
-        Args:
-            inputs (tensor): the image input to extract objects from.
-            proposals (tensor): coordinates of the box proposals.
-            image_size (tuple): the size of img images by side.
-            box_indices (tensor): indices of box considered for cropping.
-            crop_size (int): the cropping size defined per bounding box.
-        """
-        x0, y0, x1, y1 = tf.split(proposals, 4, axis=1)
-        normalized_bbox = tf.concat(
-            [y0 / tf.cast(image_size[1] - 1, dtype=tf.float32),
-             x0 / tf.cast(image_size[0] - 1, dtype=tf.float32),
-             y1 / tf.cast(image_size[1] - 1, dtype=tf.float32),
-             x1 / tf.cast(image_size[0] - 1, dtype=tf.float32)], axis=1)
-
-        return tf.image.crop_and_resize(
-            image=inputs,
-            boxes=normalized_bbox,
-            box_indices=box_indices,
-            crop_size=tf.constant([crop_size, crop_size]),
-            method='bilinear',
-            name="input_crops")
-
     @tf.function(input_signature=(
             tf.TensorSpec(shape=(None, None, None, 3), dtype=tf.float32),
             tf.TensorSpec(shape=(None, None, 4), dtype=tf.int32),
@@ -265,8 +238,7 @@ class Model(tf.keras.Model):
 
         # Get positive and unknown proposals from RPN.
         pos_rpn_indices = tf.where(
-            tf.greater(self.rpn_pos_neg_scores, 0)  # (B, rpn_B)
-        )  # (B*rpn_pos, 2), incl. rows & cols
+            tf.greater(self.rpn_pos_neg_scores, 0))  # (B*rpn_pos, 2), incl. rows & cols
         pos_rpn_indices = tf.reshape(pos_rpn_indices[:, 1], (self.batch_size, -1))  # (B, rpn_pos), only cols
 
         pos_rpn_proposals = tf.reshape(
@@ -276,8 +248,7 @@ class Model(tf.keras.Model):
         pos_rpn_gt_bbox = tf.reshape(tf.gather(
             tf.cast(gt_boxes_assigned, tf.float32), pos_rpn_indices, batch_dims=1), (-1, 4))  # (B*rpn_pos, 4)
 
-        # --------
-        # Get head proposals.
+        # -------- Head proposals.
         tiled_anchors = tf.tile(tf.expand_dims(self.anchors, axis=0), tf.constant([self.batch_size, 1, 1]))
         head_proposals = self.bbox_head.get_proposals(
             gt_cls=tf.reshape(self.head_gt_classes, [-1]),  # (B*head_B,)
@@ -325,7 +296,7 @@ class Model(tf.keras.Model):
             y_prob=tf.reshape(pooled_masks_prob, [-1]),
             loss_weight=tf.constant(config.MASK_LOSS_WEIGHT))
 
-        backbone_rgl_loss = tf.reduce_sum(self.backbone_model.model.losses)  # backbone regularizer loss
+        backbone_rgl_loss = tf.reduce_sum(self.backbone_model.model.losses)  # backbone regularization loss
         total_loss = tf.reduce_sum([rpn_total_loss, mask_total_loss, head_total_loss]) + backbone_rgl_loss
         loss_vector = tf.stack([rpn_score_loss, rpn_bbox_loss, head_cls_loss,
                                 head_bbox_loss, mask_loss])
@@ -364,6 +335,7 @@ class Model(tf.keras.Model):
         metric_values = [metric.result() for metric in metrics_]
         metric_names = [metric.name for metric in metrics_]
 
+        # ---------- Summary boxes.
         # Select positive RPN proposals.
         rpn_bbox_in_1st_img = self.rpn_proposals[0]  # (rpn_B, 4)
         rpn_scores_in_1st_img = self.rpn_pos_neg_scores[0]  # (rpn_B,)
@@ -438,13 +410,13 @@ class Model(tf.keras.Model):
             class_assignment = class_assignment.write(k, _assignments)
             assignment_ratio = assignment_ratio.write(k, _assignment_ratio)
 
-        pos_neg_scores.append(pos_neg_anchors.stack())  # F*(B, num_anchors)
-        gt_bbox_assignment.append(class_assignment.stack())  # F*(B, num_anchors)
-        gt_bbox_assignment_ratio.append(assignment_ratio.stack())  # F*(B,)
+        pos_neg_scores.append(pos_neg_anchors.stack())  # (B, num_anchors)
+        gt_bbox_assignment.append(class_assignment.stack())  # (B, num_anchors)
+        gt_bbox_assignment_ratio.append(assignment_ratio.stack())  # (B,)
 
         # Concatenate anchors and proposals.
-        self.anchor_pos_neg_scores = tf.concat(pos_neg_scores, axis=-1)  # (B, F*num_anchors)
-        self.gt_anchor_assignment = tf.concat(gt_bbox_assignment, axis=-1)  # (B, F*num_anchors)
+        self.anchor_pos_neg_scores = tf.concat(pos_neg_scores, axis=-1)  # (B, num_anchors)
+        self.gt_anchor_assignment = tf.concat(gt_bbox_assignment, axis=-1)  # (B, num_anchors)
         self.rpn_assignment_ratio = tf.concat(gt_bbox_assignment_ratio, axis=0)  # (B,)
 
         # Apply non-maximum suppression (NMS) to filter out
@@ -550,9 +522,9 @@ class Model(tf.keras.Model):
                 gt_index_assignments=self.gt_anchor_assignment[m],
                 gt_boxes=gt_boxes[m],
                 anchor_scores=self.anchor_pos_neg_scores[m],
-                rpn_scores=self.rpn_anchor_scores[m],  # (B, F*rpn_B, 2)
-                rpn_bbox_enc=self.rpn_anchor_bbox[m],  # (B, F*rpn_B, 4)
-                rpn_proposals=self.rpn_anchor_proposals[m],  # (B, F*rpn_B, 4)
+                rpn_scores=self.rpn_anchor_scores[m],  # (B, rpn_B, 2)
+                rpn_bbox_enc=self.rpn_anchor_bbox[m],  # (B, rpn_B, 4)
+                rpn_proposals=self.rpn_anchor_proposals[m],  # (B, rpn_B, 4)
                 normalize=config.BBOX_NORMALIZE_TARGETS,
                 norm_mean=tf.constant(config.BBOX_NORM_MEAN),
                 norm_std=tf.constant(config.BBOX_NORM_STD),
@@ -568,12 +540,12 @@ class Model(tf.keras.Model):
             proposals = proposals.write(m, _proposals)
             gt_assignments = gt_assignments.write(m, _gt_assign)
 
-        self.rpn_pos_neg_scores = scores_targets.stack()  # (B, F*rpn_B)
+        self.rpn_pos_neg_scores = scores_targets.stack()  # (B, rpn_B)
         self.rpn_scores_enc = scores_enc.stack()
-        self.rpn_bbox_targets = bbox_targets.stack()  # (B, F*rpn_B, 4)
+        self.rpn_bbox_targets = bbox_targets.stack()  # (B, rpn_B, 4)
         self.rpn_bbox_enc = bbox_enc.stack()
-        self.rpn_proposals = proposals.stack()  # (B, F*rpn_B, 4)
-        self.rpn_gt_assignments = gt_assignments.stack()  # (B, F*rpn_B)
+        self.rpn_proposals = proposals.stack()  # (B, rpn_B, 4)
+        self.rpn_gt_assignments = gt_assignments.stack()  # (B, rpn_B)
 
         # Apply RoI align.
         batch_ids = tf.tile(
@@ -610,7 +582,7 @@ class Model(tf.keras.Model):
             elems=[self.head_bbox_from_rpn, batch_ids],
             fn_output_signature=tf.float32)  # (B, num_boxes, P*2, P*2, num_feat*F) / P*2=pre-pool**crop_size
 
-        # (module) Contextual fusion.
+        # (extra module) Contextual fusion.
         # Use one box with image size.
         img_boxes = tf.constant([[0, 0, self.image_width - 1, self.image_height - 1]])  # (1, 4)
         img_boxes = tf.expand_dims(tf.cast(img_boxes, tf.float32), axis=0)  # (1, 1, 4)
@@ -642,9 +614,7 @@ class Model(tf.keras.Model):
         rois_pooled_mask = tf.math.add(rois_pooled_mask, tf.expand_dims(img_pooled, axis=1))
         rois_pooled_mask = tf.reshape(rois_pooled_mask, shape=out_shape)  # (B, P*2, P*2, F)
 
-        # Get mask predictions. Note: they are soft masks,
-        # represented by float numbers, so they hold more
-        # details than binary masks.
+        # Get mask predictions.
         self.rois_pooled_masks_prob, self.rois_pooled_masks_logits = self.bbox_masking(
             inputs=rois_pooled_mask)  # (B, 28, 28, num_classes)
 
@@ -656,7 +626,7 @@ class Model(tf.keras.Model):
             filepath = os.path.join(directory, filename)
             net.save_weights(filepath)
 
-        # Save learning rate.
+        # Save other checkpoint variables (e.g. learning rate).
         var_file_path = os.path.join(directory, "variables")
         checkpoint.write(var_file_path)
 
@@ -825,8 +795,8 @@ class Model(tf.keras.Model):
         Args:
             inputs (tensor): the image inputs extracted from inputs via
                 bounding boxes.
-            nms_top_n (int): maximum number of objects to detect in a
-                img. This parameter is relevant for non-maximum
+            nms_top_n (int): maximum number of objects to detect in an
+                image. This parameter is relevant for non-maximum
                 suppression in learning model.
             nms_iou_thresh (float): a threshold value above which two
                 prediction boxes are considered duplicates if their

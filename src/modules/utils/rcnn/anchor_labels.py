@@ -153,14 +153,14 @@ def generate_labels(gt_boxes, anchors, overlaps_pos, overlaps_neg, image_width, 
     # Calculate IOU between ground truth and anchor boxes.
     iou_matrix = get_iou_matrix(clipped_anchors, gt_boxes)  # (target_num, gt_boxes_num)
 
-    # Get indices of highest IOUs (per anchor).
+    # Get indices of the highest IOUs (per anchor).
     best_gt_match_index = tf.cast(tf.reshape(tf.argmax(iou_matrix, axis=1), [-1]), tf.int32)  # (target_num,)
     max_iou_vector = tf.reduce_max(iou_matrix, axis=-1)  # (target_num, 1)
 
     # Assign label 0 to anchors whose IOU is below threshold.
     clipped_pos_neg = tf.where(tf.less_equal(max_iou_vector, overlaps_neg), 0., clipped_pos_neg)  # (target_num, 1)
 
-    # Get indices of highest IOUs (per ground truth boxes).
+    # Get indices of the highest IOUs (per ground truth boxes).
     clipped_pos_neg = tf.where(tf.greater_equal(max_iou_vector, overlaps_pos), 1., clipped_pos_neg)  # (target_num, 1)
 
     # Get ratio of ground truth boxes matching anchors at

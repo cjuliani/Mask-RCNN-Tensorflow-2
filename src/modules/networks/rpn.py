@@ -135,14 +135,12 @@ class RPN(tf.keras.Model):
 
         # Stop gradient calculation for proposals because
         # gradients ignored w.r.t. the bounding boxes
-        # coordinates by Fast R-CNN in (approx.) joint
-        # training. RoI pooling is differentiable, but
+        # coordinates. RoI pooling is differentiable, but
         # its gradient calculation makes early training
-        # unstable. Here, regression in RPN is considered
-        # as pre-computed but gets ’direct’ supervision
-        # from optimizing the total loss.
+        # unstable.
+        proposals = tf.stop_gradient(proposals)
+
         if not self.trainable:
-            proposals = tf.stop_gradient(proposals)
             self.scores_prob = tf.stop_gradient(self.scores_prob)
             self.scores_enc = tf.stop_gradient(self.scores_enc)
             self.bbox_enc = tf.stop_gradient(self.bbox_enc)
@@ -314,10 +312,6 @@ class RPN(tf.keras.Model):
         self.recall.update_state(y_pred=y_pred, y_true=y_true)  # how many positives found (out of all known)
         self.specificity.update_state(y_pred=y_pred, y_true=y_true)  # rate of FP; can be 0 if no TN in image
         self.f1_score.update_state(y_pred=y_pred, y_true=y_true)
-
-        # Ratio of negatives among the (known) positives and
-        # unlabeled negatives.
-        rpn_batch = tf.cast(tf.shape(y_pred)[0], tf.float32)
 
         # Get IoU vector.
         iou_vector = iou.get_iou_vector(proposals, gt_bbox)

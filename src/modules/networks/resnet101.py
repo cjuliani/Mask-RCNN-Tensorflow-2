@@ -14,7 +14,6 @@ def ResNet(stack_fn, preact, use_bias, weights_folder, model_name='resnet',
         preact (bool): if True, add batch-normalization followed by
             an activation layer after the first convolution layer.
         use_bias (bool): if True, add bias to convolutional layers.
-        strides (list): stride coefficients used in specific layers.
         weights_folder (str): root path to weight folder.
         model_name (str): name of the backbone model.
         include_weights (bool): if True, load the ImageNet weights

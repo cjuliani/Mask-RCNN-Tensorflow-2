@@ -19,8 +19,8 @@ parser.add_argument("--gpu_allow_growth", type=bool_fn, default='False', help='M
 parser.add_argument("--gpu_device", default='0', help='Define which GPU device to work on.')
 parser.add_argument("--soft_placement", type=bool_fn, default='True',
                     help='Automatically choose an existing device to run tensor operations.')
-parser.add_argument("--model", type=str, default=None, help='Restore specified trained model.')
-parser.add_argument("--weight_folder", type=str, default=None, help='Define the weights of restored model.')
+parser.add_argument("--model_folder", type=str, default=None, help='Restore specified learning model.')
+parser.add_argument("--weight_folder", type=str, default=None, help='Restore specified weights from model restored.')
 parser.add_argument("--run_eagerly", type=bool_fn, default='False', help='Run in graph mode if False.')
 ARGS, unknown = parser.parse_known_args()
 
@@ -66,9 +66,9 @@ if __name__ == '__main__':
         data_folder=config.DATA_FOLDER,
         training_classes=config.CLASSES_TO_LEARN,
         num_classes=config.NUM_CLASSES,
-        model_folder_to_restore=ARGS.model,
+        model_to_restore=ARGS.model_folder,
         save_path=config.SAVE_WEIGHTS_PATH,
-        model_to_restore=ARGS.weight_folder,
+        weight_folder_to_restore=ARGS.weight_folder,
         run_eagerly=ARGS.run_eagerly,
         restore_lr=False,
         load_backbone=True,

@@ -2,6 +2,16 @@ import tensorflow as tf
 
 
 def resize_mask(box_coordinates, pooled_mask, output_size, threshold=None, return_object_mask=False):
+    """Resize mask to given dimensions.
+    
+    Args:
+        box_coordinates: bounding boxes coordinates.
+        pooled_mask: bounding box mask probabilities.
+        output_size (tuple or None): size in pixels of object to resize.
+        threshold (float): threshold value to define the mask.
+        return_object_mask (bool): if True, returns the mask of
+            box object with given dimensions.
+    """
     # Get dimension of roi proposal in input image.
     x1 = tf.cast(box_coordinates[1], tf.int32)
     y1 = tf.cast(box_coordinates[2], tf.int32)
@@ -36,6 +46,16 @@ def resize_mask(box_coordinates, pooled_mask, output_size, threshold=None, retur
 
 def unmold_masks(pooled_masks, boxes, img_size, mask_threshold,
                  return_object_mask=False):
+    """Returns masks of bounding boxes.
+
+    Args:
+        pooled_masks: bounding box mask probabilities.
+        boxes: bounding boxes coordinates.
+        img_size (tuple or None): size in pixels of object to resize.
+        mask_threshold (float): threshold value to define the mask.
+        return_object_mask (bool): if True, returns the mask of
+            box object with given dimensions.
+    """
     # Define matrix to iterate (box coordinates merged
     # with batch indices
     batch_size = tf.shape(boxes)[0]
@@ -43,7 +63,7 @@ def unmold_masks(pooled_masks, boxes, img_size, mask_threshold,
     to_iterate = tf.concat([indices, tf.cast(boxes, tf.int32)], axis=-1)   # (B, 5)
 
     if return_object_mask:
-        # Return masks of individual bounding boxes.
+        # Returns masks of individual bounding boxes.
         masks = []
         for row in to_iterate:
             tmp = resize_mask(
@@ -54,10 +74,10 @@ def unmold_masks(pooled_masks, boxes, img_size, mask_threshold,
             masks.append(tmp)
         return masks
     else:
-        # Return masks in image frame.
+        # Returns masks in image frame.
         return tf.map_fn(
             fn=lambda x: resize_mask(
-                x, pooled_masks, img_size,
+                x, pooled_masks, img_size[0],
                 threshold=mask_threshold,
                 return_object_mask=False),
             elems=tf.cast(to_iterate, tf.float32))  # (B, tile_size, tile_size)

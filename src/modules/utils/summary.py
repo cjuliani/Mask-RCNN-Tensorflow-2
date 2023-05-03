@@ -5,7 +5,7 @@ import matplotlib.patches as patches
 
 
 def get_grid_and_boxes(background, gt_boxes, anchors=None, scores=None,
-                       grid_points=None, pos_min_score=0.5, show_fig=False):
+                       grid_points=None, pos_min_score=0.5):
     """Returns a figure with plotted ground truth and anchor
     boxes and/or the point grid specifying the location of
     anchors.
@@ -22,7 +22,6 @@ def get_grid_and_boxes(background, gt_boxes, anchors=None, scores=None,
         grid_points (tensor): the anchor grid.
         pos_min_score (float): minimum object score for positive
             anchor boxes.
-        show_fig (bool): if True, displays the figure.
     """
     # Add background.
     fig, ax = plt.subplots()
@@ -63,14 +62,8 @@ def get_grid_and_boxes(background, gt_boxes, anchors=None, scores=None,
         for pos in grid_points:
             plt.plot(pos[0], pos[1], 'yo', markersize=1.2)
 
-    # Display while learning.
-    if show_fig:
-        plt.show()
-
     plt.xticks([])
     plt.yticks([])
-    if not show_fig:
-        plt.close('all')
     return fig
 
 
@@ -108,35 +101,3 @@ def image_to_figure(image, cmap="jet"):
     _ = plt.imshow(image, cmap=cmap)
     plt.close('all')
     return figure
-
-
-def write_loss_summaries(values, names, writer, step):
-    """Write loss summaries to tensorboard.
-
-    Args:
-        values (tensor): loss values.
-        names (list): loss names.
-        writer: a summary file writer.
-        step (int): the current training step.
-    """
-    with writer.as_default():
-        for name, loss in zip(names, values):
-            tf.summary.scalar(name, loss, step=step)
-
-
-def write_metric_summaries(values, names, writer, step):
-    """Write metrics to tensorboard.
-
-    Args:
-        values (tensor): metric values.
-        names (list): metric names.
-        writer: a summary file writer.
-        step (int): the current training step.
-    """
-    with writer.as_default():
-        for name, val in zip(names, values):
-            try:
-                tf.summary.scalar(str(name.numpy().decode('ascii')), val, step=step)
-            except AttributeError:
-                # If eagerly mode considered.
-                tf.summary.scalar(str(name), val, step=step)
