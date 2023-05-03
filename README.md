@@ -32,15 +32,15 @@ be `--rpn_obj_thresh` will be considered valid. Setting `--rpn_obj_thresh` to Fa
 mask-rcnn generating boxes instead (with class scores and masks, as opposed to boxes from the RPN branch with
 associated object scores).
 
-Other options:
-* nms_iou_thresh: A threshold value above which two prediction boxes are considered duplicates.
-* min_score: Minimum class score for predictions.
-* mask_threshold: The threshold value for binary masking.
-* soft_nms_sigma: Soft-NMS parameter. Deactivated if set to 0.
-* nms_top_n: Maximum number of objects to detect in from input.
-* show_class_names: If True, display the class name of predicted objects.
-* hide_below_threshold: If True, predictions whose class scores are below the specified threshold are not displayed.
-* hide_bg_class: If True, background predictions are not displayed.
+**Other options:**
+* **nms_iou_thresh:** A threshold value above which two prediction boxes are considered duplicates.
+* **min_score:** Minimum class score for predictions.
+* **mask_threshold:** The threshold value for binary masking.
+* **soft_nms_sigma:** Soft-NMS parameter. Deactivated if set to 0.
+* **nms_top_n:** Maximum number of objects to detect in from input.
+* **show_class_names:** If True, display the class name of predicted objects.
+* **hide_below_threshold:** If True, predictions whose class scores are below the specified threshold are not displayed.
+* **hide_bg_class:** If True, background predictions are not displayed.
 
 (3) Running the `integration_testing` module will test steps of training and testing, including the loading of 
 model variables:
